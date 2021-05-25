@@ -8,7 +8,7 @@ You will probably have to pip install: `openai`
 
 ### TODO's:
 1. Preprocessing
-    - Strip out all non-US data from dataset
+    - ~~Strip out all non-US data from dataset~~
     - Get entire tweet strings
     - Link tweets to a specific vaccine
     - Decide what to do about #'s and @'s (thinking remove #'s + text
@@ -16,8 +16,8 @@ You will probably have to pip install: `openai`
     - Remove scraping realated characters (\n, etc.)
 
 2. Model Run
-    - Decide if we want to add some of our own training examples
-    - Run for other labels too (hopeful, fearful, neutral)
+    - ~~Decide if we want to add some of our own training examples~~
+    - ~~Run for other labels too (hopeful, fearful, neutral)~~
 
 3. Postprocessing
     - Output .csv will have sentiments mapped to each but need to decide
