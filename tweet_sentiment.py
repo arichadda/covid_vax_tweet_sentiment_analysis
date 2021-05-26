@@ -15,10 +15,10 @@ Uses OpenAI's GPT-3 to classify sentiment of tweets
 
 TODO's:
 1. Preprocessing
-    - Link tweets to a specific vaccine
-    - Decide what to do about #'s and @'s (thinking remove #'s + text
-    after and just strip out @'s)
-    - Remove scraping realated characters (\n, etc.)
+    - Get rid of newlines, link to tweet
+    - Link tweets to a specific vaccine: string match by vaccine name
+    (pfizer, moderna, j&j, AZ) and use one-hot encoding basically every
+    vaccine has a column in the DF and then 0 if not or 1 if present
 
 2. Model Run
     - Run
@@ -69,7 +69,7 @@ webbrowser.open(redirect_url)
 
 user_pint_input = input("Pin? ")
 auth.get_access_token(user_pint_input)
-api = tweepy.API(auth)
+api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=5, retry_delay=30)
 
 to_drop = []
 
@@ -78,6 +78,7 @@ for idx, row in df.iterrows():
     try:
         tweet = api.get_status(curr, tweet_mode="extended")
         print(tweet.full_text)
+        # cleanup/link to vax
         df.at[idx,"text"] = tweet.full_text
     except:
         to_drop.append(idx)
