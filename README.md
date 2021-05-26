@@ -10,10 +10,8 @@ You will probably have to pip install: `openai`
 1. Preprocessing
     - ~~Strip out all non-US data from dataset~~
     - ~~Get entire tweet strings~~
-    - Link tweets to a specific vaccine
-    - Decide what to do about #'s and @'s (thinking remove #'s + text
-    after and just strip out @'s)
-    - Remove scraping realated characters (\n, etc.)
+    - Get rid of newlines, link to tweet
+    - Link tweets to a specific vaccine: string match by vaccine name (pfizer, moderna, j&j, AZ) and use one-hot encoding basically every vaccine has a column in the DF and then 0 if not or 1 if present
 
 2. Model Run
     - ~~Decide if we want to add some of our own training examples~~
