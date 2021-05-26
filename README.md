@@ -9,7 +9,7 @@ You will probably have to pip install: `openai`
 ### TODO's:
 1. Preprocessing
     - ~~Strip out all non-US data from dataset~~
-    - Get entire tweet strings
+    - ~~Get entire tweet strings~~
     - Link tweets to a specific vaccine
     - Decide what to do about #'s and @'s (thinking remove #'s + text
     after and just strip out @'s)
