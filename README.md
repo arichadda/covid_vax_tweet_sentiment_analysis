@@ -1,6 +1,5 @@
 # Tweet Sentiment using Pre-Trained RoBERTa 
 ### Also includes GPT-3 Sentiment analsyis Script
---
 ### Ari Chadda, Nina Herman, Matt Schnell
 
 0. Pre-Trained Models: https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment, https://huggingface.co/cardiffnlp/twitter-roberta-base-emotion
