@@ -2,3 +2,5 @@ GPT_SECRET_KEY.txt
 results.csv
 TWITTER_SECRET_KEY.txt
 TWITTER_KEY.txt
+.DS_Store
+cardiffnlp/
