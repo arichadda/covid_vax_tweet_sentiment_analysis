@@ -5,13 +5,6 @@ import tweepy
 import webbrowser
 import re
 
-from transformers import AutoModelForSequenceClassification
-from transformers import TFAutoModelForSequenceClassification
-from transformers import AutoTokenizer
-from scipy.special import softmax
-import csv
-import urllib.request
-
 '''
 Uses OpenAI's GPT-3 to classify sentiment of tweets
 
@@ -88,110 +81,77 @@ for idx, row in df.iterrows():
             df.at[idx, "j&j"] = 1
         if "az" in clean_tweet or "astrazeneca" in clean_tweet:
             df.at[idx, "AZ"] = 1
-# df.to_csv('./data.csv')
 
+ctr = 0
+for idx, row in df.iterrows():
+    curr = row["text"].split("https:")
+    if len(curr) == 2:
+        ctr += 1
+print(ctr)
 
-# ctr = 0
-# for idx, row in df.iterrows():
-#     curr = row["text"].split("https:")
-#     if len(curr) == 2:
-#         ctr += 1
-# print(ctr)
+get tweet string from link if the whole string is not included
+twitter_consumer_key = open('./TWITTER_KEY.txt', 'r').readline().rstrip()
+twitter_consumer_secret = open('./TWITTER_SECRET_KEY.txt', 'r').readline().rstrip()
 
-# get tweet string from link if the whole string is not included
-# twitter_consumer_key = open('./TWITTER_KEY.txt', 'r').readline().rstrip()
-# twitter_consumer_secret = open('./TWITTER_SECRET_KEY.txt', 'r').readline().rstrip()
-#
-# callback_uri = 'oob'
-# auth = tweepy.OAuthHandler(twitter_consumer_key, twitter_consumer_secret, callback_uri)
-# redirect_url = auth.get_authorization_url()
-# webbrowser.open(redirect_url)
-#
-# user_pint_input = input("Pin? ")
-# auth.get_access_token(user_pint_input)
-# api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=5, retry_delay=30)
+callback_uri = 'oob'
+auth = tweepy.OAuthHandler(twitter_consumer_key, twitter_consumer_secret, callback_uri)
+redirect_url = auth.get_authorization_url()
+webbrowser.open(redirect_url)
 
-# for tweet in tweepy.Cursor(api.search,q="#PfizerBioNTech",count=100, lang="en", since="2020-01-01", tweet_mode="extended").items():
-#     print (tweet.created_at, tweet.full_text)
+user_pint_input = input("Pin? ")
+auth.get_access_token(user_pint_input)
+api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=5, retry_delay=30)
 
-# to_drop = []
-#
-# for idx, row in df.iterrows():
-#     curr = row["id"]
-#     try:
-#         print(curr)
-#         tweet = tweepy.Cursor(api.search, id=curr, tweet_mode="extended")
-#         # tweet = api.get_status(curr, tweet_mode="extended")
-#         print(tweet.full_text)
-#         # print(tweet.full_text.split("http")[1].repace('\n',""))
-#         # cleanup/link to vax
-#         df.at[idx,"text"] = tweet.full_text
-#     except:
-#         print("MISSED")
-#         to_drop.append(idx)
-#
+for tweet in tweepy.Cursor(api.search,q="#PfizerBioNTech",count=100, lang="en", since="2020-01-01", tweet_mode="extended").items():
+    print (tweet.created_at, tweet.full_text)
+
+to_drop = []
+
+for idx, row in df.iterrows():
+    curr = row["id"]
+    try:
+        print(curr)
+        tweet = tweepy.Cursor(api.search, id=curr, tweet_mode="extended")
+        # tweet = api.get_status(curr, tweet_mode="extended")
+        print(tweet.full_text)
+        # print(tweet.full_text.split("http")[1].repace('\n',""))
+        # cleanup/link to vax
+        df.at[idx,"text"] = tweet.full_text
+    except:
+        print("MISSED")
+        to_drop.append(idx)
+
 # print(len(df) - len(to_drop))
-# df = df.drop(to_drop)
+df = df.drop(to_drop)
 # print(len(df))
 
 # df.to_csv('./data.csv')
 
 
-# df["sentiment"] = ""
-# df["clssification"] = ""
-#
-# # remove .head() when we run for real...
-# for idx, row in df.iterrows():
-#     if row["text"] != np.nan:
-#         data = " ".join(row["text"].split(" ")[:-1])
-#         sentiment_json = openai.Classification.create(
-#             model="curie",
-#             query=data,
-#             labels=["Positive", "Negative", "Neutral"],
-#             examples=[["Happy and relieved to have the #PfizerBioNTech #Covidvaccine – amazing work from all at @MHRAgovuk and @NHSuk since it’s less than 2 weeks since CHM recommended that it be approved in the UK. #GetVaccinated!", "Positive"],
-#             ["The trump administration failed to deliver on vaccine promises, *shocker* #COVIDIOTS #coronavirus #CovidVaccine", "Negative"],
-#             ["Will you be taking the COVID-19 vaccine once available to you? #COVID19 #Pfizer #BioNTech #vaccine #PfizerBioNTech", "Neutral"]]
-#         )
-#         df.at[idx,"sentiment"] = sentiment_json["label"]
-#         classification_json = openai.Classification.create(
-#             model="curie",
-#             query=data,
-#             labels=["Hopeful", "Fearful", "Neutral"],
-#             examples=[["Finally, #vaccine started in all the EU. #vaccineday is truly historic bringing hope and relief to millions of people. Thanks to #EU for supporting it and buying it for us. 🙏 to #PfizerBioNTech #AstraZeneca #Moderna. Now, most people should do it for everyone to be safe. I will.", "Hopeful"],
-#             ["And this is the state of the poor quality #Sinovac. Even friendly countries are scared about it", "Fearful"],
-#             ["Will you be taking the COVID-19 vaccine once available to you? #COVID19 #Pfizer #BioNTech #vaccine #PfizerBioNTech", "Neutral"]]
-#         )
-#         df.at[idx,"classification"] = classification_json["label"]
-# print(df["sentiment"].head())
-# print(df["classification"].head())
+df["sentiment"] = ""
+df["clssification"] = ""
 
-
-task='sentiment'
-MODEL = f"cardiffnlp/twitter-roberta-base-{task}"
-
-tokenizer = AutoTokenizer.from_pretrained(MODEL)
-
-labels=[]
-mapping_link = f"https://raw.githubusercontent.com/cardiffnlp/tweeteval/main/datasets/{task}/mapping.txt"
-with urllib.request.urlopen(mapping_link) as f:
-    html = f.read().decode('utf-8').split("\n")
-    csvreader = csv.reader(html, delimiter='\t')
-labels = [row[1] for row in csvreader if len(row) > 1]
-
-model = AutoModelForSequenceClassification.from_pretrained(MODEL)
-model.save_pretrained(MODEL)
-
+# remove .head() when we run for real...
 for idx, row in df.iterrows():
-    text = row["text"]
-    encoded_input = tokenizer(text, return_tensors='pt')
-    output = model(**encoded_input)
-    scores = output[0][0].detach().numpy()
-    scores = softmax(scores)
-
-ranking = np.argsort(scores)
-ranking = ranking[::-1]
-for i in range(scores.shape[0]):
-    l = labels[ranking[i]]
-    s = scores[ranking[i]]
-    print(f"{i+1}) {l} {np.round(float(s), 4)}")
-# df.to_csv('./results.csv')
+    if row["text"] != np.nan:
+        data = " ".join(row["text"].split(" ")[:-1])
+        sentiment_json = openai.Classification.create(
+            model="curie",
+            query=data,
+            labels=["Positive", "Negative", "Neutral"],
+            examples=[["Happy and relieved to have the #PfizerBioNTech #Covidvaccine – amazing work from all at @MHRAgovuk and @NHSuk since it’s less than 2 weeks since CHM recommended that it be approved in the UK. #GetVaccinated!", "Positive"],
+            ["The trump administration failed to deliver on vaccine promises, *shocker* #COVIDIOTS #coronavirus #CovidVaccine", "Negative"],
+            ["Will you be taking the COVID-19 vaccine once available to you? #COVID19 #Pfizer #BioNTech #vaccine #PfizerBioNTech", "Neutral"]]
+        )
+        df.at[idx,"sentiment"] = sentiment_json["label"]
+        classification_json = openai.Classification.create(
+            model="curie",
+            query=data,
+            labels=["Hopeful", "Fearful", "Neutral"],
+            examples=[["Finally, #vaccine started in all the EU. #vaccineday is truly historic bringing hope and relief to millions of people. Thanks to #EU for supporting it and buying it for us. 🙏 to #PfizerBioNTech #AstraZeneca #Moderna. Now, most people should do it for everyone to be safe. I will.", "Hopeful"],
+            ["And this is the state of the poor quality #Sinovac. Even friendly countries are scared about it", "Fearful"],
+            ["Will you be taking the COVID-19 vaccine once available to you? #COVID19 #Pfizer #BioNTech #vaccine #PfizerBioNTech", "Neutral"]]
+        )
+        df.at[idx,"classification"] = classification_json["label"]
+print(df["sentiment"].head())
+print(df["classification"].head())
